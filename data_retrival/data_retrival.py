@@ -2,18 +2,19 @@ import csv
 import time
 import requests as req
 import pandas as pd
+from data_cleaning import DataCleaner
 from dotenv import load_dotenv
 import os
 
 load_dotenv()
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
-
+DESTINATION_FOLDER = os.getenv("DATA_PATH")
 STATE = "closed"  # We are fetching closed issues
 PER_PAGE = 100    # Maximum allowed per page by GitHub API
 MAX_PAGES = 10    # Limit to avoid rate limiting; adjust as needed
 WAIT_TIME = 50  # Time to wait between pages
 
-DESTINATION_FOLDER = "C:\\Users\\aless\\OneDrive\\Desktop\\Informatica\\GithubRepos\\"
+
 # Headers for authentication
 HEADERS = {
     "Authorization": f"token {GITHUB_TOKEN}",
@@ -99,6 +100,8 @@ for repo in REPOS:
             escapechar='\\',       # Use a backslash to escape problematic characters
             quoting=csv.QUOTE_MINIMAL  # Minimize quoting, only quote fields with special characters
         )
+        cleaner = DataCleaner(df)
+        df = cleaner.clean_data()
 
         print(f"Saved {len(issues_data)} closed issues to '{filename}'.")
     else:
