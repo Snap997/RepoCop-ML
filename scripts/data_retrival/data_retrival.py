@@ -11,7 +11,7 @@ GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 DESTINATION_FOLDER = os.getenv("DATA_PATH")
 STATE = "closed"  # We are fetching closed issues
 PER_PAGE = 100    # Maximum allowed per page by GitHub API
-MAX_PAGES = 10    # Limit to avoid rate limiting; adjust as needed
+MAX_PAGES = 10000    # Limit to avoid rate limiting; adjust as needed
 WAIT_TIME = 50  # Time to wait between pages
 
 
@@ -63,20 +63,15 @@ def get_issues(repoUrl, state, per_page, max_pages):
 
             # Collect relevant data from each issue
             for issue in page_issues:
-                # Exclude pull requests (issues API returns PRs too)
-                #if "pull_request" in issue:
-                #    continue
                 issues.append({
                     "id": issue.get("id"),
-                    "number": issue.get("number"),
                     "title": issue.get("title"),
-                    "assignees": [assignee.get("id") for assignee in issue.get("assignees", [])],
-                    "state": issue.get("state"),
+                    "body": issue.get("body"),
+                    "assignees": [assignee.get("id") for assignee in issue.get("assignees")],
                     "created_at": issue.get("created_at"),
                     "closed_at": issue.get("closed_at"),
-                    "comments": issue.get("comments"),
-                    "labels": [label.get("name") for label in issue.get("labels", [])],
-                    "body": issue.get("body")
+                    "labels": [label.get("name") for label in issue.get("labels", [])]
+                    
                 })
 
             # To avoid hitting rate limits
@@ -97,8 +92,8 @@ for repo in REPOS:
         df.to_csv(
             filename,
             index=False,
-            escapechar='\\',       # Use a backslash to escape problematic characters
-            quoting=csv.QUOTE_MINIMAL  # Minimize quoting, only quote fields with special characters
+            #escapechar='\\',       # Use a backslash to escape problematic characters
+            #quoting=csv.QUOTE_MINIMAL  # Minimize quoting, only quote fields with special characters
         )
         cleaner = DataCleaner(df)
         df = cleaner.clean_data()
