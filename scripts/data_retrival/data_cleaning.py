@@ -1,6 +1,6 @@
 import pandas as pd
 from dotenv import load_dotenv
-#from encoder import Encoder
+from encoder import Encoder
 import os
 
 load_dotenv()
@@ -57,11 +57,12 @@ class DataCleaner:
         self.drop_duplicates()
         self.check_missing_values()
         self.drop_rows_with_missing_values(['title', 'assignees'])
+        self.fixDates()
         self.fill_missing_values(['labels', 'body'], '')
         self.df = self.df[self.df['assignees'].apply(lambda x: x != [] and x!= "[]")]
-        #encoder = Encoder()
-        #encoder.encode(df, "title")
-        #encoder.encode(df, "body")
+        encoder = Encoder()
+        encoder.encode(df, "title")
+        encoder.encode(df, "body")
         print("Data cleaning complete.")
         return self.df
     

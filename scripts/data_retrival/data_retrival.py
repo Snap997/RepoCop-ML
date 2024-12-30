@@ -20,9 +20,8 @@ HEADERS = {
     "Accept": "application/vnd.github.v3+json"
 }
 
-REPOS = ["vuejs/vue",
+REPOS = [
          "tensorflow/tensorflow", 
-         "twbs/bootstrap",
          "flutter/flutter",
          "angular/angular",
          "opencv/opencv",
@@ -70,8 +69,7 @@ def get_issues(repoUrl, state, per_page, max_pages):
                     "assignees": [assignee.get("id") for assignee in issue.get("assignees")],
                     "created_at": issue.get("created_at"),
                     "closed_at": issue.get("closed_at"),
-                    "labels": [label.get("name") for label in issue.get("labels", [])]
-                    
+                    "labels": [label.get("name") for label in issue.get("labels", [])]   
                 })
 
             # To avoid hitting rate limits
