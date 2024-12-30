@@ -1,11 +1,6 @@
 import pandas as pd
-from dotenv import load_dotenv
-from encoder import Encoder
+#from encoder import Encoder
 import os
-
-load_dotenv()
-
-directory_path = os.getenv("DATA_PATH") 
 
 class DataCleaner:
     def __init__(self, dataframe):
@@ -60,19 +55,23 @@ class DataCleaner:
         self.fixDates()
         self.fill_missing_values(['labels', 'body'], '')
         self.df = self.df[self.df['assignees'].apply(lambda x: x != [] and x!= "[]")]
-        encoder = Encoder()
-        encoder.encode(df, "title")
-        encoder.encode(df, "body")
+        #encoder = Encoder()
+        #encoder.encode(df, "title")
+        #encoder.encode(df, "body")
         print("Data cleaning complete.")
         return self.df
     
 
-
-for filename in os.listdir(str(directory_path+"raw/")):
+dataframes = []
+for filename in os.listdir("../data/raw/"):
     if filename.endswith(".csv"):
-        file_path = os.path.join(str(directory_path+"raw/"), filename)
+        file_path = os.path.join("../data/raw/", filename)
         df = pd.read_csv(file_path)
         cleaner = DataCleaner(df)
         df = cleaner.clean_data()
-        df.to_csv(str(directory_path + "processed/"+ filename), index=False)
+        dataframes.append((filename, df))
+        df.to_csv(str("../data/processed/"+ filename), index=False)
         print(f"File cleaned: {filename}")
+
+combined_df = pd.concat([df for _, df in dataframes], ignore_index=True)
+combined_df.to_csv(str("../data/processed/combined_issues.csv"), index=False)
