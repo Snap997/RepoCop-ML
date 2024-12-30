@@ -1,5 +1,5 @@
 import pandas as pd
-#from encoder import Encoder
+from encoder import Encoder
 from dotenv import load_dotenv
 import os
 load_dotenv()
@@ -59,9 +59,9 @@ class DataCleaner:
         self.fixDates()
         self.fill_missing_values(['labels', 'body'], '')
         self.df = self.df[self.df['assignees'].apply(lambda x: x != [] and x!= "[]")]
-        #encoder = Encoder()
-        #encoder.encode(df, "title")
-        #encoder.encode(df, "body")
+        encoder = Encoder()
+        encoder.encode(df, "title")
+        encoder.encode(df, "body")
         print("Data cleaning complete.")
         return self.df
     

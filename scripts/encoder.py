@@ -23,6 +23,7 @@ def get_codebert_embeddings(texts, tokenizer, model, batch_size=16, max_length=5
     """
     print(f"Starting embedding process, texts size: {len(texts)}")
     embeddings = []
+    texts = [str(text) if text is not None and isinstance(text, str) else "" for text in texts]
     for i in range(0, len(texts), batch_size):
         print(f"Elaborating text n.{i}")
         batch_texts = texts[i:i + batch_size]
