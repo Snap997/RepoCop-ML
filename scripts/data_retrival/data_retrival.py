@@ -2,7 +2,6 @@ import csv
 import time
 import requests as req
 import pandas as pd
-from data_cleaning import DataCleaner
 from dotenv import load_dotenv
 import os
 
@@ -12,7 +11,7 @@ DESTINATION_FOLDER = os.getenv("DATA_PATH")
 STATE = "closed"  # We are fetching closed issues
 PER_PAGE = 100    # Maximum allowed per page by GitHub API
 MAX_PAGES = 10000    # Limit to avoid rate limiting; adjust as needed
-WAIT_TIME = 50  # Time to wait between pages
+WAIT_TIME = 0  # Time to wait between pages
 
 
 # Headers for authentication
@@ -44,7 +43,8 @@ def get_issues(repoUrl, state, per_page, max_pages):
     base_url = f"https://api.github.com/repos/{repoUrl}/issues"
 
     for page in range(1, max_pages + 1):
-        print(f"Fetching page {page}...")
+        if page%10 == 0:
+            print(f"Fetching page {page}...")
         params = {
             "state": state,
             "per_page": per_page,
@@ -75,7 +75,8 @@ def get_issues(repoUrl, state, per_page, max_pages):
                 })
 
             # To avoid hitting rate limits
-            time.sleep(WAIT_TIME/1000)
+            if WAIT_TIME != 0:
+                time.sleep(WAIT_TIME/1000)
         else:
             print(f"Failed to fetch page {page}: {response.status_code}")
             break
@@ -86,7 +87,7 @@ for repo in REPOS:
     issues_data = get_issues(repo, STATE, PER_PAGE, MAX_PAGES)
 
     # Save the data to a CSV file
-    filename = DESTINATION_FOLDER + repo.split("/")[-1] + "_closed_issues.csv"
+    filename = DESTINATION_FOLDER + "raw/" + repo.split("/")[-1] + "_closed_issues.csv"
     if issues_data:
         df = pd.DataFrame(issues_data)
         df.to_csv(
@@ -95,8 +96,6 @@ for repo in REPOS:
             #escapechar='\\',       # Use a backslash to escape problematic characters
             #quoting=csv.QUOTE_MINIMAL  # Minimize quoting, only quote fields with special characters
         )
-        cleaner = DataCleaner(df)
-        df = cleaner.clean_data()
 
         print(f"Saved {len(issues_data)} closed issues to '{filename}'.")
     else:

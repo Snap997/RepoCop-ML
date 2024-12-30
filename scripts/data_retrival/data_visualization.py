@@ -2,8 +2,6 @@ import pandas as pd
 from dotenv import load_dotenv
 import os
 
-from data_cleaning import DataCleaner
-
 load_dotenv()
 
 directory_path = os.getenv("DATA_PATH")

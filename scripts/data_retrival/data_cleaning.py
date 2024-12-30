@@ -1,11 +1,11 @@
 import pandas as pd
 from dotenv import load_dotenv
-from encoder import Encoder
+#from encoder import Encoder
 import os
 
 load_dotenv()
 
-directory_path = os.getenv("DATA_PATH")
+directory_path = os.getenv("DATA_PATH") 
 
 class DataCleaner:
     def __init__(self, dataframe):
@@ -36,7 +36,7 @@ class DataCleaner:
 
     def fill_missing_values(self, columns, value):
         for column in columns:
-            self.df[column].fillna(value, inplace=True)
+            self.df[column] = self.df[column].fillna(value)
         #print(f"Missing values in {columns} have been filled with '{value}'.")
 
     def fixDates(self):
@@ -59,19 +59,19 @@ class DataCleaner:
         self.drop_rows_with_missing_values(['title', 'assignees'])
         self.fill_missing_values(['labels', 'body'], '')
         self.df = self.df[self.df['assignees'].apply(lambda x: x != [] and x!= "[]")]
-        encoder = Encoder()
-        encoder.encode(df, "title")
-        encoder.encode(df, "body")
+        #encoder = Encoder()
+        #encoder.encode(df, "title")
+        #encoder.encode(df, "body")
         print("Data cleaning complete.")
         return self.df
     
 
 
-for filename in os.listdir(directory_path):
+for filename in os.listdir(str(directory_path+"raw/")):
     if filename.endswith(".csv"):
-        file_path = os.path.join(directory_path, filename)
+        file_path = os.path.join(str(directory_path+"raw/"), filename)
         df = pd.read_csv(file_path)
         cleaner = DataCleaner(df)
         df = cleaner.clean_data()
-        df.to_csv(filename, index=False)
+        df.to_csv(str(directory_path + "processed/"+ filename), index=False)
         print(f"File cleaned: {filename}")
