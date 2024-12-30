@@ -1,8 +1,12 @@
 import pandas as pd
 #from encoder import Encoder
+from dotenv import load_dotenv
 import os
+load_dotenv()
 
 class DataCleaner:
+     
+
     def __init__(self, dataframe):
         self.df = dataframe
 
@@ -63,15 +67,16 @@ class DataCleaner:
     
 
 dataframes = []
-for filename in os.listdir("../data/raw/"):
+directory_path = os.getenv("DATA_PATH")
+for filename in os.listdir(f"{directory_path}data/raw/"):
     if filename.endswith(".csv"):
-        file_path = os.path.join("../data/raw/", filename)
+        file_path = os.path.join(f"{directory_path}data/raw/", filename)
         df = pd.read_csv(file_path)
         cleaner = DataCleaner(df)
         df = cleaner.clean_data()
         dataframes.append((filename, df))
-        df.to_csv(str("../data/processed/"+ filename), index=False)
+        df.to_csv(str(f"{directory_path}data/processed/"+ filename), index=False)
         print(f"File cleaned: {filename}")
 
 combined_df = pd.concat([df for _, df in dataframes], ignore_index=True)
-combined_df.to_csv(str("../data/processed/combined_issues.csv"), index=False)
+combined_df.to_csv(str("{directory_path}data/processed/combined_issues.csv"), index=False)

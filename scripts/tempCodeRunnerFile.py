@@ -1,1 +1,1 @@
-os.getcwd()
+directory_path = os.getenv("DATA_PATH") 
