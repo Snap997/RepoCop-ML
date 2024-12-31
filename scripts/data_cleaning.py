@@ -50,6 +50,15 @@ class DataCleaner:
     def toLowerCase(self, columns):
         self.df["title"] = self.df["title"].str.lower()
         self.df["body"] = self.df["body"].str.lower()
+
+    def encode(self, columns):   
+        encoder = Encoder()
+        for column in columns:
+            encoder.encode(self.df, column)
+            df = df.drop(columns=[column])
+          
+        print("Encoding complete.")
+        return self.df 
     
     def clean_data(self):
         #print("Starting data cleaning...")
@@ -59,9 +68,8 @@ class DataCleaner:
         self.fixDates()
         self.fill_missing_values(['labels', 'body'], '')
         self.df = self.df[self.df['assignees'].apply(lambda x: x != [] and x!= "[]")]
-        encoder = Encoder()
-        encoder.encode(df, "title")
-        encoder.encode(df, "body")
+        self.df = self.encode(['title', 'body'])
+
         print("Data cleaning complete.")
         return self.df
     

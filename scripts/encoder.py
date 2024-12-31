@@ -1,41 +1,56 @@
 from transformers import AutoTokenizer, AutoModel
 import torch
 import pandas as pd
+from typing import List
 
+# Load CodeBERT model and tokenizer
+MODEL_NAME = "microsoft/codebert-base"
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-tokenizer = AutoTokenizer.from_pretrained("microsoft/codebert-base")
-model = AutoModel.from_pretrained("microsoft/codebert-base")
+tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+model = AutoModel.from_pretrained(MODEL_NAME).to(device)
 
-
-def get_codebert_embeddings(texts, tokenizer, model, batch_size=16, max_length=512):
+def get_codebert_embeddings(
+    texts: List[str],
+    tokenizer,
+    model,
+    batch_size: int = 16,
+    max_length: int = 512
+):
     """
     Generate embeddings for a list of texts using CodeBERT.
 
     Parameters:
-        texts (list of str): List of input texts.
-        tokenizer: CodeBERT tokenizer.
-        model: CodeBERT model.
+        texts (List[str]): List of input texts.
+        tokenizer: Hugging Face tokenizer for CodeBERT.
+        model: Hugging Face model for CodeBERT.
         batch_size (int): Number of texts to process in each batch.
         max_length (int): Maximum length for tokenization.
 
     Returns:
-        torch.Tensor: Tensor of embeddings (shape: num_texts x embedding_dim).
+        torch.Tensor: Tensor of embeddings (num_texts x embedding_dim).
     """
-    print(f"Starting embedding process, texts size: {len(texts)}")
     embeddings = []
-    texts = [str(text) if text is not None and isinstance(text, str) else "" for text in texts]
+
+    # Ensure all texts are valid strings
+    texts = [str(text) if text is not None else "unknown" for text in texts]
+
     for i in range(0, len(texts), batch_size):
-        print(f"Elaborating text n.{i}")
         batch_texts = texts[i:i + batch_size]
-        # Tokenize the batch
+        print(f"Processing batch {i // batch_size + 1}/{len(texts) // batch_size + 1}")
+
+        # Tokenize the batch and move inputs to the device
         inputs = tokenizer(
             batch_texts, padding=True, truncation=True, max_length=max_length, return_tensors="pt"
         )
-        with torch.no_grad():  # Disable gradient computation
+        inputs = {key: value.to(device) for key, value in inputs.items()}
+
+        # Get embeddings
+        with torch.no_grad():
             outputs = model(**inputs)
-            # Use the [CLS] token's output as the embedding
-            batch_embeddings = outputs.last_hidden_state[:, 0, :]
-        embeddings.append(batch_embeddings)
+            batch_embeddings = outputs.last_hidden_state[:, 0, :]  # CLS token embedding
+            embeddings.append(batch_embeddings.cpu())
+
     return torch.cat(embeddings, dim=0)
 
 class Encoder:
