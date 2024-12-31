@@ -10,54 +10,61 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 model = AutoModel.from_pretrained(MODEL_NAME).to(device)
 
-def get_codebert_embeddings(
-    texts: List[str],
+def add_embeddings_to_dataframe(
+    df: pd.DataFrame,
+    text_column: str,
     tokenizer,
     model,
     batch_size: int = 16,
     max_length: int = 512
 ):
     """
-    Generate embeddings for a list of texts using CodeBERT.
+    Generate embeddings for a text column in a DataFrame and add them as new columns.
 
     Parameters:
-        texts (List[str]): List of input texts.
+        df (pd.DataFrame): DataFrame containing the text data.
+        text_column (str): Name of the column containing text data.
         tokenizer: Hugging Face tokenizer for CodeBERT.
         model: Hugging Face model for CodeBERT.
         batch_size (int): Number of texts to process in each batch.
         max_length (int): Maximum length for tokenization.
 
     Returns:
-        torch.Tensor: Tensor of embeddings (num_texts x embedding_dim).
+        pd.DataFrame: Updated DataFrame with embedding columns added.
     """
-    embeddings = []
-    total_batches = (len(texts) + batch_size - 1) // batch_size  # Calculate total number of batches
+    total_batches = (len(df) + batch_size - 1) // batch_size  # Calculate total number of batches
 
     # Ensure all texts are valid strings
-    texts = [str(text) if text is not None else "unknown" for text in texts]
+    texts = df[text_column].fillna("unknown").astype(str).tolist()
 
+    # Process in batches
+    embeddings_list = []
     for i in range(0, len(texts), batch_size):
-        # Batch progress log
-        
         current_batch = (i // batch_size) + 1
-        if current_batch % 50 == 0:
-            print(f"Processing batch {current_batch}/{total_batches}...")
+        print(f"Processing batch {current_batch}/{total_batches} for '{text_column}'...")
 
         batch_texts = texts[i:i + batch_size]
-
-        # Tokenize and move inputs to the device
         inputs = tokenizer(
             batch_texts, padding=True, truncation=True, max_length=max_length, return_tensors="pt"
         )
         inputs = {key: value.to(device) for key, value in inputs.items()}
 
-        # Get embeddings
+        # Generate embeddings
         with torch.no_grad():
             outputs = model(**inputs)
-            batch_embeddings = outputs.last_hidden_state[:, 0, :]  # CLS token embedding
-            embeddings.append(batch_embeddings.cpu())
+            batch_embeddings = outputs.last_hidden_state[:, 0, :].cpu().numpy()  # CLS token embedding
 
-    return torch.cat(embeddings, dim=0)
+        embeddings_list.append(batch_embeddings)
+
+    # Combine all embeddings
+    all_embeddings = torch.cat([torch.tensor(batch) for batch in embeddings_list], dim=0).numpy()
+
+    # Add embeddings to the DataFrame with `_embedding_` in the column name
+    for dim in range(all_embeddings.shape[1]):
+        df[f"{text_column}_embedding_dim{dim}"] = all_embeddings[:, dim]
+
+    print(f"Embeddings for '{text_column}' added to DataFrame.")
+    return df
 
 class Encoder:
 
@@ -66,7 +73,7 @@ class Encoder:
         encode with codebert inplace
         """
         texts = df[column].tolist()
-        embeddings = get_codebert_embeddings(texts, tokenizer, model)
+        embeddings = add_embeddings_to_dataframe(df, column, tokenizer, model)
 
         # Convert embeddings to a DataFrame for integration
         embeddings_df = pd.DataFrame(
