@@ -72,16 +72,7 @@ class Encoder:
         """
         encode with codebert inplace
         """
-        texts = df[column].tolist()
-        embeddings = add_embeddings_to_dataframe(df, column, tokenizer, model)
-
-        # Convert embeddings to a DataFrame for integration
-        embeddings_df = pd.DataFrame(
-            embeddings.numpy(),
-            columns=[f"{column}_embedding_{i}" for i in range(embeddings.size(1))]
-        )
-
-        # Concatenate the embeddings with the original dataset
-        df = pd.concat([df.reset_index(drop=True), embeddings_df], axis=1)
+        
+        df = add_embeddings_to_dataframe(df, column, tokenizer, model)
 
         return df
