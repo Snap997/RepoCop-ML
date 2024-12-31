@@ -41,7 +41,8 @@ def add_embeddings_to_dataframe(
     embeddings_list = []
     for i in range(0, len(texts), batch_size):
         current_batch = (i // batch_size) + 1
-        print(f"Processing batch {current_batch}/{total_batches} for '{text_column}'...")
+        if current_batch % 10 == 0:
+            print(f"Processing batch {current_batch}/{total_batches} for '{text_column}'...")
 
         batch_texts = texts[i:i + batch_size]
         inputs = tokenizer(
@@ -63,7 +64,6 @@ def add_embeddings_to_dataframe(
     for dim in range(all_embeddings.shape[1]):
         df[f"{text_column}_embedding_dim{dim}"] = all_embeddings[:, dim]
 
-    print(f"Embeddings for '{text_column}' added to DataFrame.")
     return df
 
 class Encoder:
