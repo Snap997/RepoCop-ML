@@ -40,7 +40,7 @@ def get_codebert_embeddings(
         # Batch progress log
         
         current_batch = (i // batch_size) + 1
-        if current_batch % 10 == 0:
+        if current_batch % 50 == 0:
             print(f"Processing batch {current_batch}/{total_batches}...")
 
         batch_texts = texts[i:i + batch_size]
@@ -76,3 +76,5 @@ class Encoder:
 
         # Concatenate the embeddings with the original dataset
         df = pd.concat([df.reset_index(drop=True), embeddings_df], axis=1)
+
+        return df
