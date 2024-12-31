@@ -56,8 +56,8 @@ class DataCleaner:
         for column in columns:
             encoder.encode(self.df, column)
             self.df = self.df.drop(columns=[column])
-          
-        print("Encoding complete.")
+            print("Encoding complete for column: " + str(column))
+        print("Encoding complete for columns: "+ str(columns))
         return self.df 
     
     def clean_data(self):
