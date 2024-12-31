@@ -31,15 +31,19 @@ def get_codebert_embeddings(
         torch.Tensor: Tensor of embeddings (num_texts x embedding_dim).
     """
     embeddings = []
+    total_batches = (len(texts) + batch_size - 1) // batch_size  # Calculate total number of batches
 
     # Ensure all texts are valid strings
     texts = [str(text) if text is not None else "unknown" for text in texts]
 
     for i in range(0, len(texts), batch_size):
-        batch_texts = texts[i:i + batch_size]
-        print(f"Processing batch {i // batch_size + 1}/{len(texts) // batch_size + 1}")
+        # Batch progress log
+        current_batch = (i // batch_size) + 1
+        print(f"Processing batch {current_batch}/{total_batches}...")
 
-        # Tokenize the batch and move inputs to the device
+        batch_texts = texts[i:i + batch_size]
+
+        # Tokenize and move inputs to the device
         inputs = tokenizer(
             batch_texts, padding=True, truncation=True, max_length=max_length, return_tensors="pt"
         )
@@ -50,6 +54,8 @@ def get_codebert_embeddings(
             outputs = model(**inputs)
             batch_embeddings = outputs.last_hidden_state[:, 0, :]  # CLS token embedding
             embeddings.append(batch_embeddings.cpu())
+
+        print(f"Batch {current_batch}/{total_batches} completed.")
 
     return torch.cat(embeddings, dim=0)
 
