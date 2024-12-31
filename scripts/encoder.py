@@ -38,8 +38,10 @@ def get_codebert_embeddings(
 
     for i in range(0, len(texts), batch_size):
         # Batch progress log
+        
         current_batch = (i // batch_size) + 1
-        print(f"Processing batch {current_batch}/{total_batches}...")
+        if current_batch % 10 == 0:
+            print(f"Processing batch {current_batch}/{total_batches}...")
 
         batch_texts = texts[i:i + batch_size]
 
