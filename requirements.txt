@@ -5,5 +5,4 @@ requests
 scikit-learn
 xgboost
 joblib
-torch
 transformers

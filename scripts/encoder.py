@@ -55,8 +55,6 @@ def get_codebert_embeddings(
             batch_embeddings = outputs.last_hidden_state[:, 0, :]  # CLS token embedding
             embeddings.append(batch_embeddings.cpu())
 
-        print(f"Batch {current_batch}/{total_batches} completed.")
-
     return torch.cat(embeddings, dim=0)
 
 class Encoder:
