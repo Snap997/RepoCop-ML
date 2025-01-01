@@ -35,7 +35,7 @@ def generate_and_save_embeddings_in_chunks(texts, tokenizer, model, temp_file, b
     with open(temp_file, "wb") as f:
         for i in range(0, len(texts), batch_size):
             current_batch = (i // batch_size) + 1
-            if(current_batch % batch_size == 0):
+            if(current_batch%10 == 0):
                 print(f"Processing batch {current_batch}/{total_batches}...")
 
             batch_texts = texts[i:i + batch_size]
@@ -79,11 +79,12 @@ def read_and_update_dataframe_with_embeddings(df, temp_file, text_column):
 
     # Load all embeddings from the temporary file
     with open(temp_file, "rb") as f:
+        f.seek(0)  # Reset the file pointer to the beginning
         while True:
             try:
                 batch = np.load(f)
                 embeddings.append(batch)
-            except ValueError:  # End of file
+            except (ValueError, EOFError):  # End of file
                 break
 
     embeddings = np.vstack(embeddings)
