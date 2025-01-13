@@ -35,7 +35,7 @@ You can update the `DATA` path as needed based on your environment or data locat
 Next, modify and run the `tempCodeRunner.py` file to get started with the data processing and machine learning workflow.
 
 ```bash
-python tempCodeRunner.py
+python main.py
 ```
 
 ---
