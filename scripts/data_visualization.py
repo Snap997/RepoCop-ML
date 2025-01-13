@@ -28,20 +28,20 @@ def plot_distribution():
 dataset_distribution = {}
 dataframes = []
 # Scan the directory for files with a .csv extension
-for filename in os.listdir(str(directory_path + "processed/")):
+for filename in os.listdir(str(directory_path + "data/processed/")):
     if filename.endswith(".csv"):
-        file_path = os.path.join(str(directory_path + "processed/"), filename)
+        file_path = os.path.join(str(directory_path + "data/processed/"), filename)
         # Read the CSV file into a DataFrame and add it to the list
         df = pd.read_csv(file_path)
         dataframes.append((filename, df))
-        dataset_distribution[filename] = df['id'].count()
-        print(f"File read: {filename} with {df['id'].count()} issues")
+        dataset_distribution[filename] = df['issue_title'].count()
+        print(f"File read: {filename} with {df['issue_title'].count()} issues")
 
 combined_df = pd.concat([df for _, df in dataframes], ignore_index=True)
 
 
 #DB SIZE
-print(f"Dataset has {combined_df['id'].count()} issues")
+print(f"Dataset has {combined_df['issue_title'].count()} issues")
 
 plot_distribution()
 
